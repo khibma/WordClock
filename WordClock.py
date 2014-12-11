@@ -55,14 +55,14 @@ numberOfPins = 20
 #(Length: 12)
 hourPins= [pinHourOne, pinHourTwo, pinHourThree, pinHourFour, pinHourFive,
               pinHourSix, pinHourSeven, pinHourEight, pinHourNine, pinHourTen,
-              pinHourEleven, inHourTwelve]
+              pinHourEleven, pinHourTwelve]
 
 numberOfHourPins = 12
 
 #Minute pins are more tricky. The following array shows the sequence of minute pins
 #to light up. pinNoPin is used to fill out the arrays, and should be ignored when
 #looping over them.
-minuteSequence[
+minuteSequence = [
         [ pinMinOClock, pinNoPin, pinNoPin ],
         [ pinMinFive, pinPast, pinNoPin ],
         [ pinMinTen, pinPast, pinNoPin ],
