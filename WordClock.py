@@ -5,8 +5,10 @@ from Adafruit_I2C import Adafruit_I2C
 import Adafruit_MCP230xx as ada
 import time
 import datetime
+import RPi.GPIO as gpio
 #import smbus
 
+gpio.setmode(gpio.BCM)
 
 #currentHourPinIndex keeps track of which hour pin (as defined in hourPins) is lit
 #0 = "one", 1 = "two", etc.
@@ -19,35 +21,38 @@ currentMinuteSequenceIndex = 1
 
 #CONSTANTS
 
+switch = 9
+button = 24
 #This constant is used as a 'null'
 #The code will ignore this value when it is found
 pinNoPin = -1
 
 #Pin numbers (these will all depend on the hardware wiring)
-pinMinFive = 5
-pinMinTen = 2
-pinMinQuarter = 3
-pinMinTwenty = 4
-pinMinHalf = 1
-pinMinOClock = 13
+pinMinFive = {'m': 1}
+pinMinTen = {'m': 1}
+pinMinutes = {'g': 17}
+pinMinQuarter = {'g': 7}
+pinMinTwenty = {'g': 22}
+pinMinHalf = {'m': 1}
+pinMinOClock = {'g': 23}
 
-pinPast = 8
-pinTo = 6
+pinPast = {'m': 1}
+pinTo = {'m': 1}
 
-pinHourOne = 9
-pinHourTwo = 10
-pinHourThree = 11
-pinHourFour = 12
-pinHourFive = 13
-pinHourSix = 14
-pinHourSeven = 15
-pinHourEight = 16
-pinHourNine = 16
-pinHourTen = 16
-pinHourEleven = 16
-pinHourTwelve = 16
+pinHourOne = {'m': 1}
+pinHourTwo ={'m': 1}
+pinHourThree = {'m': 1}
+pinHourFour = {'m': 1}
+pinHourFive = {'m': 1}
+pinHourSix = {'m': 1}
+pinHourSeven = {'m': 1}
+pinHourEight = {'m': 1}
+pinHourNine = {'g': 25}
+pinHourTen = {'m': 1}
+pinHourEleven = {'m': 1}
+pinHourTwelve = {'g': 18}
 
-#All pins (used to clear clock face)
+#All pins
 allPins = [pinMinFive, pinMinTen, pinMinQuarter, pinMinTwenty, pinMinHalf,
             pinMinOClock, pinPast, pinTo, pinHourOne, pinHourTwo, pinHourThree,
             pinHourFour, pinHourFive, pinHourSix, pinHourSeven, pinHourEight,
@@ -83,14 +88,53 @@ numberOfMinuteSequences = 12
 #Change the hour when the minute hits the following index
 hourChangeIndex = 7
 
-def setup(numberOfPins):
-  #Setup all pins as output
-  i = 0
-  for i in range(0, numberOfPins):
-    pinMode(allPins[i], OUTPUT)
+def moveTime(pin):
+  #INCREMENT THE TIME INDEX BY 1
+  pass
 
-  turnOn(minuteSequence[currentMinuteSequenceIndex])
-  turnOn(hourPins[currentHourPinIndex])
+
+def setup(mcp, gpio, pins):
+  ''' get pins setup and registered'''
+
+  for pin in pins:
+    for k, v in pin.items():
+      if k == 'g':
+        gpio.setup(v, gpio.OUT)
+      else:
+        mcp.config(v, mcp.OUTPUT)
+
+def startUp(pins):
+  ''' move through all the items and turn them on, turn them off'''
+
+  for pin in pins:
+    for k, v in pin.items():
+      if k == 'g':
+        gpio.output(v, True)
+        time.sleep(0.5)
+        gpio.output(v, False)
+      else:
+        mcp.output(v, True)
+        time.sleep(0.5)
+        mcp.output(v, False)
+
+
+def turnOn(pins):
+  i = 0
+  for i in range(0, 3): #Assumed length of 3
+    On(pins[i])
+
+def On(pin):
+  print "on : {}".format(pin)
+  mcp.output(pin, 1)
+
+def turnOff(pins):
+  i=0
+  for i in range(0, 3): #Assumed length of 3
+    Off(pins[i])
+
+def Off(pin):
+  print "off : {}".format(pin)
+  mcp.output(pin, 0)
 
 
 def loop():
@@ -122,31 +166,20 @@ def loop():
   time.sleep(20)
 
 
-def turnOn(pins):
-  i = 0
-  for i in range(0, 3): #Assumed length of 3    
-    On(pins[i])
-
-def On(pin):
-  print "on : {}".format(pin)
-  mcp.output(pin, 1)
-
-def turnOff(pins):
-  i=0
-  for i in range(0, 3): #Assumed length of 3
-    Off(pins[i])
-
-def Off(pin):
-  print "off : {}".format(pin)
-  mcp.output(pin, 0)
 
 
 if __name__ == '__main__':
 
+  # register MCP to use the 230xx chip (16 gpio expander)
   mcp = ada.Adafruit_MCP230XX(address = 0x20, num_gpios = 16)
 
-  for i in range(0, 16):
-    mcp.config(i, mcp.OUTPUT)
-  
+  # initalize our GPIO/MCP-gpio LEDs
+  setup(mcp, gpio, allPins)
+  gpio.setup(switch, gpio.IN)
+  gpio.setup(button, gpio.IN)
+
+  #register the event detect for button
+  gpio.add_event_detect(button, gpio.RISING, callback=moveTime, bouncetime=200)
+
+
   loop()
-  
