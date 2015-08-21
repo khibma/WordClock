@@ -28,35 +28,36 @@ button = 24
 pinNoPin = -1
 
 #Pin numbers (these will all depend on the hardware wiring)
-pinMinFive = {'m': 1}
-pinMinTen = {'m': 1}
+pinMinFive = {'m': 3}
+pinMinTen = {'m': 2}
 pinMinutes = {'g': 17}
 pinMinQuarter = {'g': 7}
 pinMinTwenty = {'g': 22}
 pinMinHalf = {'m': 1}
 pinMinOClock = {'g': 23}
 
-pinPast = {'m': 1}
-pinTo = {'m': 1}
+pinItIs = {'m', 0}
+pinPast = {'m': 5}
+pinTo = {'m': 4}
 
-pinHourOne = {'m': 1}
-pinHourTwo ={'m': 1}
-pinHourThree = {'m': 1}
-pinHourFour = {'m': 1}
-pinHourFive = {'m': 1}
-pinHourSix = {'m': 1}
-pinHourSeven = {'m': 1}
-pinHourEight = {'m': 1}
+pinHourOne = {'m': 6}
+pinHourTwo ={'m': 15}
+pinHourThree = {'m': 7}
+pinHourFour = {'m': 14}
+pinHourFive = {'m': 11}
+pinHourSix = {'m': 13}
+pinHourSeven = {'m': 12}
+pinHourEight = {'m': 10}
 pinHourNine = {'g': 25}
-pinHourTen = {'m': 1}
-pinHourEleven = {'m': 1}
+pinHourTen = {'m': 8}
+pinHourEleven = {'m': 9}
 pinHourTwelve = {'g': 18}
 
 #All pins
-allPins = [pinMinFive, pinMinTen, pinMinQuarter, pinMinTwenty, pinMinHalf,
-            pinMinOClock, pinPast, pinTo, pinHourOne, pinHourTwo, pinHourThree,
-            pinHourFour, pinHourFive, pinHourSix, pinHourSeven, pinHourEight,
-            pinHourNine, pinHourTen, pinHourEleven, pinHourTwelve]
+allPins = [pinItIs, pinMinFive, pinMinTen, pinMinQuarter, pinMinTwenty,
+           pinMinHalf, pinMinOClock, pinPast, pinTo, pinHourOne, pinHourTwo,
+           pinHourThree, pinHourFour, pinHourFive, pinHourSix, pinHourSeven,
+           pinHourEight, pinHourNine, pinHourTen, pinHourEleven, pinHourTwelve]
 numberOfPins = 20
 
 #The hour pins array gives the order that the pins need to be lit up.
