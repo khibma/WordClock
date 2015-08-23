@@ -3,6 +3,7 @@
 
 from Adafruit_I2C import Adafruit_I2C
 import Adafruit_MCP230xx as ada
+import subprocess
 import time
 import datetime
 import RPi.GPIO as gpio
@@ -54,17 +55,17 @@ pinHourEleven = {'m': 9}
 pinHourTwelve = {'g': 18}
 
 #All pins
-allPins = [pinItIs, pinMinFive, pinMinTen, pinMinQuarter, pinMinTwenty,
+allPins = [pinMinFive, pinMinTen, pinMinQuarter, pinMinTwenty,
            pinMinHalf, pinMinOClock, pinPast, pinTo, pinHourOne, pinHourTwo,
            pinHourThree, pinHourFour, pinHourFive, pinHourSix, pinHourSeven,
            pinHourEight, pinHourNine, pinHourTen, pinHourEleven, pinHourTwelve]
-numberOfPins = 20
+numberOfPins = 21
 
 #The hour pins array gives the order that the pins need to be lit up.
 #(Length: 12)
 hourPins= [pinHourOne, pinHourTwo, pinHourThree, pinHourFour, pinHourFive,
-              pinHourSix, pinHourSeven, pinHourEight, pinHourNine, pinHourTen,
-              pinHourEleven, pinHourTwelve]
+           pinHourSix, pinHourSeven, pinHourEight, pinHourNine, pinHourTen,
+           pinHourEleven, pinHourTwelve]
 
 numberOfHourPins = 12
 
@@ -120,35 +121,46 @@ def startUp(pins):
 
 
 def turnOn(pins):
-  i = 0
-  for i in range(0, 3): #Assumed length of 3
-    On(pins[i])
-
-def On(pin):
-  print "on : {}".format(pin)
-  mcp.output(pin, 1)
+  for p in pins:
+    for k, v in p.items():
+      if k == 'g':
+        gpio.output(v, True)
+      else:
+        mcp.output(v, True)
 
 def turnOff(pins):
-  i=0
-  for i in range(0, 3): #Assumed length of 3
-    Off(pins[i])
-
-def Off(pin):
-  print "off : {}".format(pin)
-  mcp.output(pin, 0)
+  for p in pins:
+    for k, v in p.items():
+      if k == 'g':
+        gpio.output(v, False)
+      else:
+        mcp.output(v, False)
+        
+def SHUTDOWN():
+  
+  turnOff(allPins) # turn off "it is"
+  turnOff([pinItIs])
+  time.sleep(0.8)
+  offSeq = [pinItIs, pinMinHalf, pinMinTen]
+  for i in xrange(0, 2):
+    turnOn(offSeq)
+    time.sleep(0.5)
+    turnOff(offSeq)
+    time.sleep(0.5)
+  print("would be shutting down here...")
+  command = "/usr/bin/sudo /sbin/shutdown -r now"  
+  #process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+  #output = process.communicate()[0]  
 
 
 def loop():
-  #Wait 5 minutes = 300sec
-  #time.sleep(300)
-
+  
   #Move the minutes onto the next step
   turnOff(minuteSequence[currentMinuteSequenceIndex])
   currentMinuteSequenceIndex +=1
 
   #If we hit the end of the minutePins array, add one to the hour index
   if(currentMinuteSequenceIndex >= numberOfMinuteSequences):
-
     currentMinuteSequenceIndex = 0
 
   turnOn(minuteSequence[currentMinuteSequenceIndex])
@@ -163,10 +175,16 @@ def loop():
         currentHourPinIndex = 0
 
     turnOn(hourPins[currentHourPinIndex])
-
-  time.sleep(20)
-
-
+  
+  # 20 * 15 seconds = 300seconds (5mins)
+  # So loop every 5 minutes, but check every 15 seconds
+  # if the switch has been turned off
+  i = 0
+  while i < 19:
+    if gpio.input(switch):
+        SHUTDOWN()
+    time.sleep(15)
+    i += 1
 
 
 if __name__ == '__main__':
@@ -181,6 +199,12 @@ if __name__ == '__main__':
 
   #register the event detect for button
   gpio.add_event_detect(button, gpio.RISING, callback=moveTime, bouncetime=200)
+  
+  # Sanity check at startup, turn all pins on and off 
+  startUp(allPins)
 
+  # turn on "it is"....
+  turnOn([pinItIs])  
 
+  # start counting time
   loop()
