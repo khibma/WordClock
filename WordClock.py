@@ -28,7 +28,7 @@ pinMinTwenty = {'g': 22}
 pinMinHalf = {'m': 1}
 pinMinOClock = {'g': 23}
 
-pinItIs = {'m', 0}
+pinItIs = {'m': 0}
 pinPast = {'m': 5}
 pinTo = {'m': 4}
 
@@ -125,8 +125,8 @@ def turnOff(pins):
         
 def SHUTDOWN():
   
-  turnOff(allPins) # turn off "it is"
-  turnOff([pinItIs])
+  turnOff(allPins) 
+  turnOff([pinItIs])  # turn off "it is"
   time.sleep(0.8)
   offSeq = [pinItIs, pinMinHalf, pinMinTen]
   for i in xrange(0, 2):
