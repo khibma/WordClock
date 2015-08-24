@@ -17,7 +17,7 @@ switch = 9
 button = 24
 #This constant is used as a 'null'
 #The code will ignore this value when it is found
-pinNoPin = -1
+pinNoPin = {'z': 0}
 
 #Pin numbers
 pinMinFive = {'m': 3}
@@ -102,7 +102,7 @@ def startUp(pins):
         gpio.output(v, True)
         time.sleep(0.5)
         gpio.output(v, False)
-      else:
+      elif k == 'm':
         mcp.output(v, True)
         time.sleep(0.5)
         mcp.output(v, False)
@@ -112,15 +112,16 @@ def turnOn(pins):
     for k, v in p.items():
       if k == 'g':
         gpio.output(v, True)
-      else:
+      elif k == 'm':
         mcp.output(v, True)
 
 def turnOff(pins):
+  print pins
   for p in pins:
     for k, v in p.items():
       if k == 'g':
         gpio.output(v, False)
-      else:
+      elif k == 'm':
         mcp.output(v, False)
         
 def SHUTDOWN():
@@ -136,8 +137,8 @@ def SHUTDOWN():
     time.sleep(0.5)
   print("would be shutting down here...")
   command = "/usr/bin/sudo /sbin/shutdown -r now"  
-  #process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-  #output = process.communicate()[0]  
+  process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+  output = process.communicate()[0]  
 
 class wc(object):
   
@@ -152,27 +153,29 @@ class wc(object):
     self.lpTimer = 0    
 
   def loop(self):
+
+
     
     self.lpTimer = 0
     
     #Move the minutes onto the next step
-    turnOff(minuteSequence[currentMinuteSequenceIndex])
-    currentMinuteSequenceIndex +=1
+    turnOff(minuteSequence[self.currentMinuteSequenceIndex])
+    self.currentMinuteSequenceIndex +=1
   
     #If we hit the end of the minutePins array, add one to the hour index
-    if(currentMinuteSequenceIndex >= numberOfMinuteSequences):
-      currentMinuteSequenceIndex = 0
+    if(self.currentMinuteSequenceIndex >= numberOfMinuteSequences):
+      self.currentMinuteSequenceIndex = 0
   
-    turnOn(minuteSequence[currentMinuteSequenceIndex])
+    turnOn(minuteSequence[self.currentMinuteSequenceIndex])
   
     #Check for hour change
-    if(currentMinuteSequenceIndex == hourChangeIndex):
-      turnOff(hourPins[currentHourPinIndex])
+    if(self.currentMinuteSequenceIndex == hourChangeIndex):
+      turnOff(hourPins[self.currentHourPinIndex])
       currentHourPinIndex += 1
   
       #If we hit the end of the hourPins array, go back to 0
-      if(currentHourPinIndex >= numberOfHourPins):
-          currentHourPinIndex = 0
+      if(self.currentHourPinIndex >= numberOfHourPins):
+          self.currentHourPinIndex = 0
   
       turnOn(hourPins[currentHourPinIndex])
     
@@ -183,14 +186,16 @@ class wc(object):
     while self.lpTimer < 19:
       if gpio.input(switch):
           SHUTDOWN()
-      time.sleep(15)
+      time.sleep(5)
       self.lpTimer += 1
+      print self.lpTimer
       
       
   def moveTime(self, pin):
     # INCREMENT THE TIME INDEX BY 1    
+    print "moved the time"
     self.currentMinuteSequenceIndex +=1
-    self.lpTimer = 0
+    self.lpTimer = 20
 
 
 if __name__ == '__main__':
@@ -206,7 +211,7 @@ if __name__ == '__main__':
   
   #register the event detect for button
   gpio.add_event_detect(button, gpio.RISING, callback=clock.moveTime, bouncetime=200)
-  
+
   # Sanity check at startup, turn all pins on and off 
   startUp(allPins)
 
@@ -214,5 +219,5 @@ if __name__ == '__main__':
   turnOn([pinItIs])  
 
   # start counting time
-  
-  clock.loop()
+  while True:
+    clock.loop()
