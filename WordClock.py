@@ -7,7 +7,6 @@ import subprocess
 import time
 import datetime
 import RPi.GPIO as gpio
-#import smbus
 
 gpio.setmode(gpio.BCM)
 
@@ -57,31 +56,28 @@ numberOfPins = 21
 hourPins= [pinHourOne, pinHourTwo, pinHourThree, pinHourFour, pinHourFive,
            pinHourSix, pinHourSeven, pinHourEight, pinHourNine, pinHourTen,
            pinHourEleven, pinHourTwelve]
-
 numberOfHourPins = 12
 
 #Minute pins are more tricky. The following array shows the sequence of minute pins
 #to light up. pinNoPin is used to fill out the arrays, and should be ignored when
 #looping over them.
 minuteSequence = [
-        [ pinMinOClock, pinNoPin, pinNoPin ],
-        [ pinMinFive, pinPast, pinNoPin ],
-        [ pinMinTen, pinPast, pinNoPin ],
-        [ pinMinQuarter, pinPast, pinNoPin ],
-        [ pinMinTwenty, pinPast, pinNoPin ],
-        [ pinMinTwenty, pinMinFive, pinPast ],
-        [ pinMinHalf, pinPast, pinNoPin ],
+        [ pinMinOClock ],
+        [ pinMinFive, pinPast ],
+        [ pinMinTen, pinPast ],
+        [ pinMinQuarter, pinPast ],
+        [ pinMinTwenty, pinPast ],
+        [ pinMinTwenty, pinMinFive ],
+        [ pinMinHalf, pinPast ],
         [ pinMinTwenty, pinMinFive, pinTo ],
-        [ pinMinTwenty, pinTo, pinNoPin ],
-        [ pinMinQuarter, pinTo, pinNoPin ],
-        [ pinMinTen, pinTo, pinNoPin ],
-        [ pinMinFive, pinTo, pinNoPin ]  ]
+        [ pinMinTwenty, pinTo ],
+        [ pinMinQuarter, pinTo ],
+        [ pinMinTen, pinTo ],
+        [ pinMinFive, pinTo ]  ]
 numberOfMinuteSequences = 12
 
 #Change the hour when the minute hits the following index
 hourChangeIndex = 7
-
-
 
 def setup(mcp, gpio, pins):
   ''' get pins setup and registered'''
@@ -136,7 +132,7 @@ def SHUTDOWN():
     turnOff(offSeq)
     time.sleep(0.5)
   print("would be shutting down here...")
-  command = "/usr/bin/sudo /sbin/shutdown -r now"  
+  command = "/usr/bin/sudo /sbin/shutdown now"  
   process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
   output = process.communicate()[0]  
 
@@ -145,16 +141,14 @@ class wc(object):
   def __init__(self):
     # currentHourPinIndex keeps track of which hour pin (as defined in hourPins) is lit
     # 0 = "one", 1 = "two", etc.    
-    self.currentHourPinIndex = 2
+    self.currentHourPinIndex = 0
     # currentMinutePinsIndex does a similar job to currentHourPinsIndex.
     # 0 = "o'clock", 1 = "five past", ... ,
     # 5 = "twenty five past", 6 = "half past", 7 = "twenty five to", etc.
-    self.currentMinuteSequenceIndex = 1
+    self.currentMinuteSequenceIndex = 0
     self.lpTimer = 0    
 
   def loop(self):
-
-
     
     self.lpTimer = 0
     
@@ -168,7 +162,7 @@ class wc(object):
   
     turnOn(minuteSequence[self.currentMinuteSequenceIndex])
   
-    #Check for hour change
+    #Check for hour change (this will change it after 'half past', thus 7 index)
     if(self.currentMinuteSequenceIndex == hourChangeIndex):
       turnOff(hourPins[self.currentHourPinIndex])
       currentHourPinIndex += 1
@@ -186,7 +180,7 @@ class wc(object):
     while self.lpTimer < 19:
       if gpio.input(switch):
           SHUTDOWN()
-      time.sleep(5)
+      time.sleep(5)  #should be 15
       self.lpTimer += 1
       print self.lpTimer
       
@@ -194,7 +188,7 @@ class wc(object):
   def moveTime(self, pin):
     # INCREMENT THE TIME INDEX BY 1    
     print "moved the time"
-    self.currentMinuteSequenceIndex +=1
+    #self.currentMinuteSequenceIndex +=1
     self.lpTimer = 20
 
 
