@@ -67,7 +67,7 @@ minuteSequence = [
         [ pinMinTen, pinPast ],
         [ pinMinQuarter, pinPast ],
         [ pinMinTwenty, pinPast ],
-        [ pinMinTwenty, pinMinFive ],
+        [ pinMinTwenty, pinMinFive, pinPast ],
         [ pinMinHalf, pinPast ],
         [ pinMinTwenty, pinMinFive, pinTo ],
         [ pinMinTwenty, pinTo ],
@@ -145,7 +145,7 @@ class wc(object):
     # currentMinutePinsIndex does a similar job to currentHourPinsIndex.
     # 0 = "o'clock", 1 = "five past", ... ,
     # 5 = "twenty five past", 6 = "half past", 7 = "twenty five to", etc.
-    self.currentMinuteSequenceIndex = 0
+    self.currentMinuteSequenceIndex = -1
     self.lpTimer = 0    
 
   def loop(self):
@@ -154,7 +154,12 @@ class wc(object):
     
     #Move the minutes onto the next step
     turnOff(minuteSequence[self.currentMinuteSequenceIndex])
+
     self.currentMinuteSequenceIndex +=1
+
+    if self.currentMinuteSequenceIndex == 0:
+      # must put this in a list as turnOn expects that
+      turnOn([hourPins[self.currentHourPinIndex]])
   
     #If we hit the end of the minutePins array, add one to the hour index
     if(self.currentMinuteSequenceIndex >= numberOfMinuteSequences):
@@ -164,25 +169,27 @@ class wc(object):
   
     #Check for hour change (this will change it after 'half past', thus 7 index)
     if(self.currentMinuteSequenceIndex == hourChangeIndex):
-      turnOff(hourPins[self.currentHourPinIndex])
-      currentHourPinIndex += 1
+      turnOff([hourPins[self.currentHourPinIndex]])
+      self.currentHourPinIndex += 1
   
       #If we hit the end of the hourPins array, go back to 0
       if(self.currentHourPinIndex >= numberOfHourPins):
           self.currentHourPinIndex = 0
   
-      turnOn(hourPins[currentHourPinIndex])
+      turnOn([hourPins[self.currentHourPinIndex]])
     
     # 20 * 15 seconds = 300seconds (5mins)
     # So loop every 5 minutes, but check every 15 seconds
     # if the switch has been turned off
-    
-    while self.lpTimer < 19:
+    print(self.currentMinuteSequenceIndex)
+    while self.lpTimer < 2:  #should be 19
       if gpio.input(switch):
           SHUTDOWN()
-      time.sleep(5)  #should be 15
+      time.sleep(2)  #should be 15
       self.lpTimer += 1
       print self.lpTimer
+
+
       
       
   def moveTime(self, pin):
