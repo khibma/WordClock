@@ -1,0 +1,32 @@
+### BEGIN INIT INFO
+# Provides: a wordclock startup
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: wordclock
+# Description: go wordclock go
+### END INIT INFO
+
+#!/bin/sh
+# /etc/init.d/WC
+
+export HOME
+case "$1" in
+    start)
+      echo "Starting wordclock"
+      sleep 3s
+      python /home/pi/wordclock/WordClock.py 2>&1 &
+      echo "running"
+    ;;
+    stop)
+      echo "stoping wordclock"
+      WC_PID=`ps auxwww | grep WordClock.py | head -1 | awk '{print $2}'`
+      kill -9 $WC_PID
+    ;;
+    *)
+      echo "usage: /etc/init.d/WC {start|stop}"
+      exit 1
+    ;;
+esac
+exit 0
