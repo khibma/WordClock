@@ -23,6 +23,7 @@
 from Adafruit_I2C import Adafruit_I2C
 import smbus
 import time
+import RPi.GPIO as gpio
 
 MCP23017_IODIRA = 0x00
 MCP23017_IODIRB = 0x01
@@ -181,18 +182,10 @@ if __name__ == '__main__':
     # Set num_gpios to 8 for MCP23008 or 16 for MCP23017!
     # ***************************************************
     #mcp = Adafruit_MCP230XX(address = 0x20, num_gpios = 8) # MCP23008
-    print "before mxp set"
+    
     mcp = Adafruit_MCP230XX(address = 0x20, num_gpios = 16) # MCP23017
-    print "before pin3 config"
-    # Set pin 3 to input with the pullup resistor enabled
-    mcp.config(3, mcp.INPUT)
-    mcp.pullup(3, 1)
-
-    # Read input pin and display the results
-    print "Pin 3 = %d" % (mcp.input(3) >> 3)
-
-    # Python speed test on output 0 toggling at max speed
-    print "Starting blinky on pin 0 (CTRL+C to quit)"
+        
+    print "Shutting down all pins"
 
     
     for i in range(0, 16):
@@ -202,4 +195,10 @@ if __name__ == '__main__':
     print "off"
         
 
+    boardPins = [17,22,23,25,18]
+    gpio.setmode(gpio.BCM)
+    for p in boardPins:
+      gpio.setup(p, gpio.OUT)
+      gpio.output(p, False)
 
+    
