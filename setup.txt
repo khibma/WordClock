@@ -1,6 +1,26 @@
 
 git clone http://www.github.com/khibma/WordClock
 
+sudo apt-get install python-smbus
+sudo apt-get isntall i2c-tools
+
+sudo raspi-config
+# Advanced options
+#  I2C Enable
+
+sudo nano /etc/modules
+ > i2c-bcm2708
+ > i2c-dev
+
+sudo nano /boot/config.txt
+ > dtparam=i2c1=on
+ > dtparam=i2c_arm=on
+
+sudo reboot
+
+sudo i2cdetect -y 1
+
 sudo cp WC /etc/init.d/WC
 sudo chmod 755 /etc/init.d/WC
 sudo update-rc.d WC defaults
+
