@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from Adafruit_I2C import Adafruit_I2C
+from Adafruit.Adafruit_I2C import Adafruit_I2C
 import smbus
 import time
 import RPi.GPIO as gpio

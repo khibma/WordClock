@@ -1,8 +1,8 @@
 #quick, dirty port of https://github.com/jonnyarnold/wordclock/blob/master/inos/wordclock.ino
 #hopefully this will work instead of reinventing the wheel
 
-from Adafruit_I2C import Adafruit_I2C
-import Adafruit_MCP230xx as ada
+from Adafruit.Adafruit_I2C import Adafruit_I2C
+import Adafruit.Adafruit_MCP230xx as ada
 #import subprocess
 import time
 import datetime

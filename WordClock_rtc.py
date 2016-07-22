@@ -1,8 +1,8 @@
 #quick, dirty port of https://github.com/jonnyarnold/wordclock/blob/master/inos/wordclock.ino
 #hopefully this will work instead of reinventing the wheel
 
-from Adafruit_I2C import Adafruit_I2C
-import Adafruit_MCP230xx as ada
+from Adafruit.Adafruit_I2C import Adafruit_I2C
+import Adafruit.Adafruit_MCP230xx as ada
 import time
 import datetime
 import RPi.GPIO as gpio
@@ -186,6 +186,7 @@ class wc(object):
     
     # If the button was pressed when in RTC mode, disable the flag for RTC
     # and clock will fall into old button push mode.
+    global RTC
     if RTC:
       RTC = False
     
@@ -193,6 +194,7 @@ class wc(object):
     print ("moved the time")
     #self.currentMinuteSequenceIndex +=1
     self.lpTimer = self.loopMax
+
 
 class rtc(object):
   """ set time via RTC """
@@ -204,6 +206,10 @@ class rtc(object):
     self.minuteOnIdx = 0
     
   def loop(self): 
+
+    if gpio.input(switch):
+      SHUTDOWN()
+    
     self.hour = datetime.datetime.now().hour
     self.minutes = datetime.datetime.now().minute    
     
@@ -216,13 +222,17 @@ class rtc(object):
       turnOff([hourPins[self.hourOnIdx]])
       self.hourOnIdx = self.hour - 1
     if self.minuteOnIdx != int(self.minutes / 5):
-      turnOff([self.minuteOnIdx])
+      turnOff(minuteSequence[self.minuteOnIdx])
       self.minuteOnIdx = int(self.minutes / 5)
-    
+    print([hourPins[self.hourOnIdx]])
+    print(minuteSequence[self.minuteOnIdx])
     turnOn([hourPins[self.hourOnIdx]])
-    turnOn([minuteSequence[self.minuteOnIdx]])
+    turnOn(minuteSequence[self.minuteOnIdx])
     
     time.sleep(30) # check time every 30 seconds and increment if necessary
+    global RTC
+    if not RTC:
+      return
 
 if __name__ == '__main__':
 
@@ -244,15 +254,18 @@ if __name__ == '__main__':
   
   RTC = True
   
-  if RTC:
-    # CLOCK VIA REAL TIME PARSED
-    while RTC:
-      clockRTC.loop()    
+  while True:
+    if RTC:
+      # CLOCK VIA REAL TIME PARSED
+      while RTC:
+        clockRTC.loop()
   
-  else:
-    # CLOCK VIA SLEEP, SIMPLE INCREMENT
-    while True:
-      clock.loop()
+    else:
+      # CLOCK VIA SLEEP, SIMPLE INCREMENT
+      turnOff(allPins)
+      while True:
+        clock.loop()
+
   
 
       
