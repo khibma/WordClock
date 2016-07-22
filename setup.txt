@@ -11,6 +11,7 @@ sudo raspi-config
 sudo nano /etc/modules
  > i2c-bcm2708
  > i2c-dev
+ > rc-ds1307
 
 sudo nano /boot/config.txt
  > dtparam=i2c1=on
