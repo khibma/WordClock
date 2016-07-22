@@ -3,7 +3,6 @@
 
 from Adafruit_I2C import Adafruit_I2C
 import Adafruit_MCP230xx as ada
-#import subprocess
 import time
 import datetime
 import RPi.GPIO as gpio
@@ -184,11 +183,46 @@ class wc(object):
       
       
   def moveTime(self, pin):
+    
+    # If the button was pressed when in RTC mode, disable the flag for RTC
+    # and clock will fall into old button push mode.
+    if RTC:
+      RTC = False
+    
     # INCREMENT THE TIME INDEX BY 1    
-    print "moved the time"
+    print ("moved the time")
     #self.currentMinuteSequenceIndex +=1
     self.lpTimer = self.loopMax
 
+class rtc(object):
+  """ set time via RTC """
+  
+  def __init__(self):
+    self.hour = datetime.datetime.now().hour
+    self.minutes = datetime.datetime.now().minute
+    self.hourOnIdx = 0
+    self.minuteOnIdx = 0
+    
+  def loop(self): 
+    self.hour = datetime.datetime.now().hour
+    self.minutes = datetime.datetime.now().minute    
+    
+    if self.minutes > 30:
+      self.hour += 1    
+    if self.hour > 12:
+      self.hour = self.hour - 12
+      
+    if self.hour - 1 != self.hourOnIdx:
+      turnOff([hourPins[self.hourOnIdx]])
+      self.hourOnIdx = self.hour - 1
+    if self.minuteOnIdx != int(self.minutes / 5):
+      turnOff([self.minuteOnIdx])
+      self.minuteOnIdx = int(self.minutes / 5)
+    
+    turnOn([hourPins[self.hourOnIdx]])
+    turnOn([minuteSequence[self.minuteOnIdx]])
+    
+    time.sleep(30) # check time every 30 seconds and increment if necessary
 
 if __name__ == '__main__':
 
@@ -200,6 +234,7 @@ if __name__ == '__main__':
   gpio.setup(switch, gpio.IN)
   gpio.setup(button, gpio.IN)
   clock = wc()
+  clockRTC = rtc()
   
   #register the event detect for button
   gpio.add_event_detect(button, gpio.RISING, callback=clock.moveTime, bouncetime=200)
@@ -207,6 +242,18 @@ if __name__ == '__main__':
   # Sanity check at startup, turn all pins on and off 
   startUp(allPins)
   
-  # start counting time
-  while True:
-    clock.loop()
+  RTC = True
+  
+  if RTC:
+    # CLOCK VIA REAL TIME PARSED
+    while RTC:
+      clockRTC.loop()    
+  
+  else:
+    # CLOCK VIA SLEEP, SIMPLE INCREMENT
+    while True:
+      clock.loop()
+  
+
+      
+    
