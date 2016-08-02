@@ -7,6 +7,7 @@ sudo apt-get isntall i2c-tools
 sudo raspi-config
 # Advanced options
 #  I2C Enable
+#  Set time zone
 
 sudo nano /etc/modules
  > i2c-bcm2708
@@ -17,11 +18,29 @@ sudo nano /boot/config.txt
  > dtparam=i2c1=on
  > dtparam=i2c_arm=on
 
-sudo reboot
-
+# Check the RTC is found (68)
 sudo i2cdetect -y 1
 
+# Get the clock / driver to load on boot (this throws an error on boot. Hmm)
+sudo nano /etc/rc.local
+ > echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-1/new_device
+ > sleep 0.5
+ > hwclock -s
+# Note the dtoverlay=i2c-rtc,ds1307 doesnt work for me. Throwing other errors on boot.
+# You may also need to remove the fake hwclock. Theres lot of posts all over the www on this
+
+sudo reboot
+
+# Check the clock
+date
+sudo hwclock -r  #read the time. 
+# > if correct, write the time:
+sudo hwclock -w
+
+
+# Setup the service  (This is for OLD Rpi linux versions..)
 sudo cp WC /etc/init.d/WC
 sudo chmod 755 /etc/init.d/WC
 sudo update-rc.d WC defaults
 
+# Newer, Jessie linux uses systemd. See the link for a straight forward explanation
