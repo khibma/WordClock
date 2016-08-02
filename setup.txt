@@ -44,3 +44,4 @@ sudo chmod 755 /etc/init.d/WC
 sudo update-rc.d WC defaults
 
 # Newer, Jessie linux uses systemd. See the link for a straight forward explanation
+http://www.raspberrypi-spy.co.uk/2015/10/how-to-autorun-a-python-script-on-boot-using-systemd/
