@@ -206,30 +206,43 @@ class rtc(object):
     self.minuteOnIdx = 0
     
   def loop(self): 
+    
+    dbg = 'debug.log'
+    txt = open(dbg,"w")   
+    dbgTxt = ""
 
     if gpio.input(switch):
       SHUTDOWN()
     
     self.hour = datetime.datetime.now().hour
-    self.minutes = datetime.datetime.now().minute    
+    self.minutes = datetime.datetime.now().minute  
+    dbgTxt += "h:{}, m:{}, ".format(self.hour, self.minutes)
     
     if self.minutes > 30:
       self.hour += 1    
     if self.hour > 12:
       self.hour = self.hour - 12
-      
+    dbgTxt += "(new h:{}), ".format(self.hour)
+    
     if self.hour - 1 != self.hourOnIdx:
       turnOff([hourPins[self.hourOnIdx]])
       self.hourOnIdx = self.hour - 1
     if self.minuteOnIdx != int(self.minutes / 5):
       turnOff(minuteSequence[self.minuteOnIdx])
       self.minuteOnIdx = int(self.minutes / 5)
-    print([hourPins[self.hourOnIdx]])
-    print(minuteSequence[self.minuteOnIdx])
+      
+    #print([hourPins[self.hourOnIdx]])
+    #print(minuteSequence[self.minuteOnIdx])
+    
     turnOn([hourPins[self.hourOnIdx]])
     turnOn(minuteSequence[self.minuteOnIdx])
+    dbgTxt += " hIdx: {}, mIdx: {}\n".format(self.hourOnIdx, self.minuteOnIdx)
     
     time.sleep(30) # check time every 30 seconds and increment if necessary
+    
+    txt.writelines(dbgTxt)       
+    txt.close()    
+    
     global RTC
     if not RTC:
       return
