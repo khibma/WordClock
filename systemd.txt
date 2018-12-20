@@ -1,0 +1,23 @@
+reference: https://www.raspberrypi.org/documentation/linux/usage/systemd.md
+
+sudo nano /etc/systemd/system/WC.service
+
+[Unit]
+Description=MyWordclock
+Requires=local-fs.target
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python -u WordClock_piw2.py >/home/pi/log.log 2>&1
+WorkingDirectory=/home/pi/wordclock
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target
+
+
+sudo systemctl daemon-reload
+sudo systemctl start WC.service
+sudo systemctl status WC.service
