@@ -21,3 +21,6 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 sudo systemctl start WC.service
 sudo systemctl status WC.service
+
+#have it startup automatically:
+sudo systemctl enable WC.service
